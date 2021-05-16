@@ -1,7 +1,7 @@
 # Anti Bot
 
 ## Building
-First, make sure you have JDK 14 installed. Then, setup [plugin.json](src/main/resources/plugin.json) and run the following commands:
+First, make sure you have JDK 14 installed. Then, setup [plugin.json](assets/plugin.json) and run the following commands:
 
 * Windows: `gradlew jar`
 * *nix/Mac OS: `./gradlew jar`
