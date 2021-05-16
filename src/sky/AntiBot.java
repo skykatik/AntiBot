@@ -23,10 +23,10 @@ public class AntiBot extends Plugin{
         Fi configFi = dataDirectory.child("anti-bot-config.json");
         if(configFi.exists()){
             config = JsonIO.json.fromJson(Config.class, configFi);
-            Log.info("[AntiBot]: Конфиг загружен");
+            Log.info("[AntiBot]: Config loaded");
         }else{
             configFi.writeString(Jval.read(JsonIO.json.toJson(config = new Config(), Config.class)).toString(Jval.Jformat.formatted));
-            Log.info("[AntiBot]: Конфиг создан (@)", configFi.absolutePath());
+            Log.info("[AntiBot]: Config created (@)", configFi.absolutePath());
         }
 
         JsonIO.json.setUsePrototypes(true);
@@ -37,7 +37,8 @@ public class AntiBot extends Plugin{
                     isBanned(event.player)){
 
                 event.player.kick(Packets.KickReason.idInUse);
-                Log.info("[AntiBot]: Пользователь '@' уже на сервере", event.player.name);
+                Log.info("[AntiBot]: User @ already on server, IP: @; ID: @", event.player.name, event.player.con.address,
+                        event.player.uuid());
             }
         });
     }
