@@ -8,7 +8,7 @@ import mindustry.game.EventType;
 import mindustry.gen.*;
 import mindustry.io.JsonIO;
 import mindustry.mod.Plugin;
-import mindustry.net.Packets;
+import mindustry.net.*;
 
 import static mindustry.Vars.*;
 
@@ -31,10 +31,18 @@ public class AntiBot extends Plugin{
 
         JsonIO.json.setUsePrototypes(true);
 
+        Events.on(EventType.ConnectionEvent.class, event -> {
+            if(!config.joinkeeper.allow(config.joinkeeperInterval, config.joinRateLimit)){
+                event.connection.kick(Packets.KickReason.kick);
+            }
+        });
+
         Events.on(EventType.PlayerConnect.class, event -> {
+            Administration.PlayerInfo playerInfo = netServer.admins.getInfo(event.player.uuid());
             if(Groups.player.contains(p -> p.uuid().equals(event.player.uuid()) || p.con.address.equals(event.player.con.address) ||
                     config.isMatch(event.player.name, p.name)) ||
-                    isBanned(event.player)){
+                    isBanned(event.player) ||
+                    (!config.joinkeeper.allow(config.joinkeeperInterval, config.joinRateLimit) && playerInfo.timesJoined == 1)){
 
                 event.player.kick(Packets.KickReason.idInUse);
                 Log.info("[AntiBot]: User @ already on server, IP: @; ID: @", event.player.name, event.player.con.address,
@@ -50,18 +58,25 @@ public class AntiBot extends Plugin{
     }
 
     public static class Config{
-        public boolean isNameMatchingEnabled = false;
+        public boolean nameMatchingEnabled = false;
         public int nameMatching = 3;
+        public long joinkeeperInterval = 1000; // 1 second
+        public int joinRateLimit = 4;
+
+        public transient Ratekeeper joinkeeper = new Ratekeeper();
 
         public boolean isMatch(String a, String b){
-            return isNameMatchingEnabled && Strings.levenshtein(a, b) < nameMatching;
+            return nameMatchingEnabled && Strings.levenshtein(a, b) < nameMatching;
         }
 
         @Override
         public String toString(){
             return "Config{" +
-                    "isNameMatchingEnabled=" + isNameMatchingEnabled +
+                    "nameMatchingEnabled=" + nameMatchingEnabled +
                     ", nameMatching=" + nameMatching +
+                    ", joinkeeperInterval=" + joinkeeperInterval +
+                    ", joinRateLimit=" + joinRateLimit +
+                    ", joinkeeper=" + joinkeeper +
                     '}';
         }
     }
